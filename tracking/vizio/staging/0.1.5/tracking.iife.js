@@ -88,22 +88,17 @@ function Injectable(injectable) {
 exports.Injectable = Injectable;
 var Log = /** @class */ (function () {
     function Log() {
-        this.debug = false;
-        if (console) {
-            this.setLogger(console);
-        }
     }
-    Log.getDefault = function () {
-        return this.instance || (this.instance = new this());
-    };
-    Log.prototype.setLogger = function (logger) {
-        if (this.hasLog(logger)) {
-            this.logger = logger;
+    Log.setLogger = function (logger) {
+        if (typeof logger === 'object' && typeof logger.log === 'function') {
+            Log.logger = logger;
         }
     };
-    Log.prototype.hasLog = function (logger) {
-        return typeof logger === 'object' && typeof logger.log === 'function';
+    Log.isDebug = function () {
+        return Log.debug && !!Log.logger.log;
     };
+    Log.debug = false;
+    Log.logger = console || null;
     return Log;
 }());
 exports.Log = Log;
@@ -402,7 +397,7 @@ var Agent = /** @class */ (function () {
         this.debugId = '[Tracker] ' + config.name;
     }
     Agent.prototype.onRegister = function () {
-        this.isDebug() && this.logger.log(this.debugId, 'start up');
+        Log.isDebug() && Log.logger.log(this.debugId, 'start up');
     };
     Agent.prototype.onNotify = function (notification) {
         var _this = this;
@@ -428,7 +423,7 @@ var Agent = /** @class */ (function () {
         return this.isSdkLoaded;
     };
     Agent.prototype.onNotificationReceived = function (notification) {
-        this.isDebug() && this.logger.log(this.debugId, notification.name, this.getDataVo().playhead);
+        Log.isDebug() && Log.logger.log(this.debugId, notification.name, this.getDataVo().playhead);
         this.notification = notification;
         switch (notification.name) {
             case AppEvent.AdBreakStart:
@@ -442,16 +437,6 @@ var Agent = /** @class */ (function () {
                 break;
         }
     };
-    Agent.prototype.isDebug = function () {
-        return Log.getDefault().debug;
-    };
-    Object.defineProperty(Agent.prototype, "logger", {
-        get: function () {
-            return Log.getDefault().logger;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Agent.prototype.getDataVo = function () {
         return this.observable.dataProxy.getData();
     };
@@ -524,7 +509,7 @@ var BuildInfo = /** @class */ (function () {
     Object.defineProperty(BuildInfo, "version", {
         // Version is populated at build time
         get: function () {
-            return 'tracking v0.1.5 Thu, 20 Jun 2019 11:42:16 GMT';
+            return 'tracking v0.1.5 Fri, 21 Jun 2019 14:28:03 GMT';
         },
         enumerable: true,
         configurable: true
@@ -626,10 +611,11 @@ var Tracker = /** @class */ (function (_super) {
         this.dataProxy.update({ liveSegmentData: data });
     };
     Tracker.prototype.setDebug = function (debug) {
-        Log.getDefault().debug = debug;
+        Log.debug = debug;
+        Log.isDebug() && Log.logger.log(BuildInfo.version);
     };
     Tracker.prototype.setLogger = function (logger) {
-        Log.getDefault().setLogger(logger);
+        Log.setLogger(logger);
     };
     return Tracker;
 }(Observable));
@@ -646,7 +632,7 @@ var AdobeAgent = /** @class */ (function (_super) {
     AdobeAgent.prototype.onRegister = function () {
         _super.prototype.onRegister.call(this);
         this.vo = new AdobeVo(this);
-        this.restClient = new RestClient(this.isDebug() ? this.vo.devApiServer : this.vo.prodApiServer);
+        this.restClient = new RestClient(Log.isDebug() ? this.vo.devApiServer : this.vo.prodApiServer);
         this.eventQueue = new Queue();
         this.timer = new Timer(this.vo.hbInterval);
     };
@@ -725,9 +711,9 @@ var AdobeAgent = /** @class */ (function (_super) {
             data: this.vo.getPayload(eventName),
             method: 'POST'
         };
-        this.isDebug() && this.logger.log(this.debugId, eventName, options);
+        Log.isDebug() && Log.logger.log(this.debugId, eventName, options);
         this.restClient.request(options).then(function (_response) {
-            //this.isDebug() && this.logger.log(this.debugId, 'statusCode', response.statusCode);
+            //Log.isDebug() && Log.logger.log(this.debugId, 'statusCode', response.statusCode);
         });
         if (eventName === 'play' && !this.isAdPlaying) {
             this.startHbTracking();
@@ -740,7 +726,7 @@ var AdobeAgent = /** @class */ (function (_super) {
             data: this.vo.getSessionStartData(),
             method: 'POST'
         };
-        this.isDebug() && this.logger.log(this.debugId, options);
+        Log.isDebug() && Log.logger.log(this.debugId, options);
         this.restClient.request(options).then(function (response) {
             if (response.statusCode === 404) {
                 throw ('Error: Server response 404');
@@ -752,7 +738,7 @@ var AdobeAgent = /** @class */ (function (_super) {
             }
             _this.hasAdobeSession = true;
             _this.apiPath = _this.vo.getApiPath(location);
-            _this.isDebug() && _this.logger.log(_this.debugId, _this.apiPath);
+            Log.isDebug() && Log.logger.log(_this.debugId, _this.apiPath);
             _this.processEventQueue();
         });
     };
@@ -761,13 +747,13 @@ var AdobeAgent = /** @class */ (function (_super) {
         if (!this.hasAdobeSession) {
             return;
         }
-        this.isDebug() && this.logger.log(this.debugId, 'hbInterval', this.vo.hbInterval);
+        Log.isDebug() && Log.logger.log(this.debugId, 'hbInterval', this.vo.hbInterval);
         this.timer.start(function () {
             _this.trackEvent('ping');
         });
     };
     AdobeAgent.prototype.pauseHbTracking = function () {
-        this.isDebug() && this.logger.log(this.debugId, 'hb paused');
+        Log.isDebug() && Log.logger.log(this.debugId, 'hb paused');
         this.timer.stop();
     };
     AdobeAgent.prototype.trackSessionEnd = function () {
@@ -793,14 +779,13 @@ var AdobeVo = /** @class */ (function (_super) {
     AdobeVo.prototype.getSessionStartData = function () {
         var data = this.agent.getDataVo();
         var eventData = this.getPayload('sessionStart');
-        var visitorData = this.getVisitorData();
         eventData.params = {
             'analytics.trackingServer': this.trackingServer,
             'analytics.reportSuite': this.reportSuite,
-            'analytics.visitorId': visitorData.visitorId,
+            'analytics.visitorId': this.visitorId,
             'analytics.enableSSL': this.enableSSL,
             'visitor.marketingCloudOrgId': this.marketingCloudOrgId,
-            'visitor.marketingCloudUserId': visitorData.marketingCloudUserId,
+            'visitor.marketingCloudUserId': this.getMarketingCloudUserId(),
             'media.playerName': data.playerName,
             'media.contentType': data.isLive ? 'Live' : 'VOD',
             'media.length': data.duration,
@@ -833,20 +818,37 @@ var AdobeVo = /** @class */ (function (_super) {
         eventData.customMetadata = this.dataToString(data.contextData);
         return eventData;
     };
-    AdobeVo.prototype.getVisitorData = function () {
-        var visitorData = {
-            visitorId: '',
-            marketingCloudUserId: this.marketingCloudUserId || ''
-        };
-        var Visitor = View.getVar('Visitor');
-        if (!Visitor) {
-            return visitorData;
+    AdobeVo.prototype.getMarketingCloudUserId = function () {
+        // Use Id provided in the config if available
+        if (this.marketingCloudUserId) {
+            return this.marketingCloudUserId;
         }
+        // Retrieve the Visitor Api to get the Id
+        var Visitor = View.getVar('Visitor');
+        // Can't get an Id without the Visitor Api
+        if (!Visitor) {
+            return '';
+        }
+        // Retrieve the Visitor instance for this user
         var visitorInstance = Visitor.getInstance(this.marketingCloudOrgId, this.visitorOptions || {});
-        visitorData.visitorId = visitorInstance.getAnalyticsVisitorID();
-        visitorData.marketingCloudUserId = visitorInstance.getMarketingCloudVisitorID();
-        return visitorData;
+        return visitorInstance.getMarketingCloudVisitorID();
     };
+    // getVisitorData(): VisitorData {
+    //     const visitorData: VisitorData = {
+    //         visitorId: '',
+    //         marketingCloudUserId: this.marketingCloudUserId || ''
+    //     };
+    //     const Visitor: AdobeVisitor = View.getVar('Visitor');
+    //     if (!Visitor) {
+    //         return visitorData;
+    //     }
+    //     const visitorInstance: VisitorInstance = Visitor.getInstance(
+    //         this.marketingCloudOrgId, this.visitorOptions || {}
+    //     );
+    //     visitorData.visitorId = visitorInstance.getAnalyticsVisitorID();
+    //     visitorData.marketingCloudUserId = visitorInstance.getMarketingCloudVisitorID();
+    //     return visitorData;
+    // }
     AdobeVo.prototype.getAdBreakStartData = function () {
         var data = this.agent.getDataVo();
         return {
@@ -912,6 +914,9 @@ var AdobeVo = /** @class */ (function (_super) {
     __decorate([
         ModuleParam()
     ], AdobeVo.prototype, "marketingCloudUserId", void 0);
+    __decorate([
+        ModuleParam()
+    ], AdobeVo.prototype, "visitorId", void 0);
     __decorate([
         ModuleParam()
     ], AdobeVo.prototype, "devApiServer", void 0);
