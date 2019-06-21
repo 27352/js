@@ -509,7 +509,7 @@ var BuildInfo = /** @class */ (function () {
     Object.defineProperty(BuildInfo, "version", {
         // Version is populated at build time
         get: function () {
-            return 'tracking v0.1.5 Fri, 21 Jun 2019 14:28:03 GMT';
+            return 'tracking v0.1.5 Fri, 21 Jun 2019 14:38:25 GMT';
         },
         enumerable: true,
         configurable: true
@@ -831,7 +831,8 @@ var AdobeVo = /** @class */ (function (_super) {
         }
         // Retrieve the Visitor instance for this user
         var visitorInstance = Visitor.getInstance(this.marketingCloudOrgId, this.visitorOptions || {});
-        return visitorInstance.getMarketingCloudVisitorID();
+        return !!visitorInstance && !!visitorInstance.getMarketingCloudVisitorID
+            ? visitorInstance.getMarketingCloudVisitorID() : '';
     };
     // getVisitorData(): VisitorData {
     //     const visitorData: VisitorData = {
