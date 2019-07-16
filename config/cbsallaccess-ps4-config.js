@@ -11,7 +11,7 @@
                 reportSuite: "cnetcbscomsite-dev",
                 marketingCloudOrgId: "10D31225525FF5790A490D4D@AdobeOrg",
                 channel: "CBS Entertainment",
-                enableSSL: true,
+                enableSSL: true
             }
         },
         Nielsen: {
