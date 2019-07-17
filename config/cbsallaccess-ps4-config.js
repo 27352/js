@@ -18,7 +18,7 @@
             enabled: true,
             params: {
                 devApiServer: "sandbox-cloudapi.imrworldwide.com/nmapi/v2",
-                prodApiServer: "cloudapi.imrworldwide.com/nmapi/v2",
+                prodApiServer: "sandbox-cloudapi.imrworldwide.com/nmapi/v2",
                 appId: "dfe5-gd82-8bsh-f8bx",
                 genreId: "SE"
             }
