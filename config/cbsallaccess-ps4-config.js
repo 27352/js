@@ -17,16 +17,15 @@
         Nielsen: {
             enabled: true,
             params: {
+                prodApiServer: "cloudapi.imrworldwide.com/nmapi/v2",
                 devApiServer: "sandbox-cloudapi.imrworldwide.com/nmapi/v2",
-                prodApiServer: "sandbox-cloudapi.imrworldwide.com/nmapi/v2",
                 appId: "dfe5-gd82-8bsh-f8bx",
                 genreId: "SE"
             }
         },
         ConvivaPs4: {
-            enabled: false,
+            enabled: true,
             params: {
-                customerId: "c3.CBS",
                 customerKey: "87a6b28bc7823e67a5bb2a0a6728c702afcae78d",
                 prodServerUrl: "cbscom-test.testonly.conviva.com",
                 testServerUrl: "cws.conviva.com"
