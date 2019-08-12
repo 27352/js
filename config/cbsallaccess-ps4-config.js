@@ -33,7 +33,7 @@
             }
         },
         Sparrow: {
-            enabled: false,
+            enabled: true,
             params: {
                 //prodUrl: 'sparrow.cbsallaccess.ca',
                 //stageUrl: 'stage-sparrow.cbsallaccess.ca',
