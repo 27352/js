@@ -39,6 +39,17 @@
                 //stageUrl: 'stage-sparrow.cbsallaccess.ca',
                 //interval: 3
             }
+        },
+        Comscore: {
+            enabled: true,
+            params: {
+                c2: "3002231",
+                c3: "partnerPlaceholder",
+                c4: "contentCreatorPlaceholder",
+                c6: "SeasonNumberEpisodeNumberPlaceholder",
+                partnerID: "cbs",
+                publishersSecret: "2cb08ca4d095dd734a374dff8422c2e5"
+            }
         }
     };
 
