@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "module": "commonjs",
+        "declaration": true,
+        "noImplicitAny": true,
+        "target": "es5",
+        "sourceMap": true,
+        "strict": true,
+        "importHelpers": false,
+        "experimentalDecorators": true,
+        "outDir": "./dist",
+        "lib": ["dom", "es2015"]
+    },
+    "include": [
+        "./src/types.d.ts",
+        "./src/types.ts"
+    ],
+    "files": [
+        "./src/index.ts"
+    ]
+}

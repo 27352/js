@@ -1,0 +1,21 @@
+{
+  "name": "jest-sample",
+  "version": "0.0.1",
+  "description": "Typescript Jest Test Project",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "coverage": "jest --coverage"
+  },
+  "keywords": [],
+  "author": "27352",
+  "license": "",
+  "devDependencies": {
+    "@types/jest": "^25.2.3",
+    "jest": "^26.0.1",
+    "ts-jest": "^26.0.0",
+    "typescript": "^3.9.3"
+  },
+  "dependencies": {}
+}
